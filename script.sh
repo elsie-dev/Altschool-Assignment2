@@ -31,7 +31,7 @@ vagrant ssh server1 -c '
 '
 
 # SSH into server1 and copy SSH key to server2
-vagrant ssh server1 -c "ssh-copy-id -i ~/.ssh/id_rsa vagrant@$server2_ip"
+vagrant ssh server1 -c "ssh-copy-id -i ~/.ssh/id_rsa altschool@$server2_ip"
 
 # SSH into Slave node (server2) again and revert SSH configuration
 vagrant ssh server2 -c '
@@ -46,4 +46,11 @@ vagrant ssh server2 -c '
 '
 
 # SSH into server1 and then SSH into altschool@server2
-vagrant ssh server1 -c "ssh altschool@$server2_ip"
+#vagrant ssh server1 -c "ssh altschool@$server2_ip"
+
+# SSH into server1 as altschool user, create the destination directory, and copy the contents
+vagrant ssh server1 -c "ssh altschool@$server2_ip 'mkdir -p /mnt/altschool/slave && scp -r /mnt/altschool/* /mnt/altschool/slave/'"
+
+
+# Display an overview of Linux process management on Master
+#vagrant ssh server1 -c 'top'
