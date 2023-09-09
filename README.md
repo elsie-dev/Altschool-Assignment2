@@ -19,6 +19,14 @@ STEPS:
      - Ensure the ip address of both the slave and master are different (run ipconfig command to confirm in each server)
 4.  Create a Bash script that will automate the process
 
+**Vagrantfile** - This file contains multinode setup with two nodes master and slave. 
+I configured both in the same file.
+I added __private_network__ configuration in the DHCP which assigns different ip addresses.
+
+Also included: LAMP Setup in the Vagrantfile instead of the Bash script to avoid complexity.
+
+
+```
 
 ## Issues experienced: Troubleshooting 
 
