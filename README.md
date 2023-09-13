@@ -26,6 +26,12 @@ I added __private_network__ configuration in the DHCP which assigns different ip
 Also included: LAMP Setup in the Vagrantfile instead of the Bash script to avoid complexity.
 
 
+In the bash script l included a final step to generate a PHP test file to validate PHP functionality. 
+The command l used in the bash scipt :
+
+```
+# Create a PHP test file
+echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/test.php
 ```
 
 ## Issues experienced: Troubleshooting 
