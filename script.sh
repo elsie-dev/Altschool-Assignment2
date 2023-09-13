@@ -52,5 +52,8 @@ vagrant ssh server2 -c '
 vagrant ssh server1 -c "ssh altschool@$server2_ip 'mkdir -p /mnt/altschool/slave && scp -r /mnt/altschool/* /mnt/altschool/slave/'"
 
 
-# Display an overview of Linux process management on Master
-#vagrant ssh server1 -c 'top'
+# Display an overview of Linux process on Master
+vagrant ssh server1 -c 'ps aux'
+
+# Create a PHP info file
+echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/test.php
