@@ -1,4 +1,4 @@
-#!/bin/bash
+y#!/bin/bash
 
 # Determine the current directory
 CURRENT_DIR=$(pwd)
@@ -7,7 +7,7 @@ CURRENT_DIR=$(pwd)
 vagrant up
 
 # Get the IP address of the Slave node
-server2_ip=$(vagrant ssh-config slave | grep HostName | awk '{print $2}')
+server2_ip=$(vagrant ssh-config server2 | grep HostName | awk '{print $2}')
 
 # SSH into master node , create user altschool with sudo priviledges
 vagrant ssh server1 -c '
