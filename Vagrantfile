@@ -61,8 +61,8 @@ Vagrant.configure("2") do |config|
   #   vb.gui = true
   #
   #   # Customize the amount of memory on the VM:
-     vb.memory = "1024"
-     vb.cpus = "2"
+    vb.memory = "1024"
+    vb.cpus = "2"
   end
   #
   # View the documentation for the provider you are using for more
@@ -71,75 +71,35 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
-   #config.vm.provision "shell", inline: <<-SHELL
-     #apt-get update
-     #apt-get install -y apache2
-  #SHELL
-  config.vm.define "server1" do |subconfig|
-    subconfig.vm.hostname = "server1"
+  # config.vm.provision "shell", inline: <<-SHELL
+  #   apt-get update
+  #   apt-get install -y apache2
+  # SHELL
+
+  #Multi-Machine setup
+  config.vm.define "master" do |subconfig| 
+    subconfig.vm.hostname = "master"
     subconfig.vm.network :private_network, type: "dhcp"
-  
-    subconfig.vm.provision "shell", inline: <<-SHELL
-      # Update package list and install Apache, MySQL, and PHP
-      sudo apt-get update
-      sudo apt-get install -y apache2 mysql-server php libapache2-mod-php php-mysql
-      #Ensure APache runs on boot
-      sudo systemctl enable apache2
-      sudo systemctl start apache2
-
-     # Secure MYSQL installation and initialize
-      sudo mysql_secure_installation <<EOF
-
-    #Answering Y for the requirements 
-      y
-      y
-      y
-      y
-      y
-
-      # Set a default MySQL user and password (Change these values as needed)
-      mysql -u root -p -e "CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';"
-      mysql -u root -p -e "GRANT ALL PRIVILEGES ON *.* TO 'your_username'@'localhost' WITH GRANT OPTION;"
-      mysql -u root -p -e "FLUSH PRIVILEGES;"
-      EOF
-   SHELL 
- end
-
-
-  config.vm.define "server2" do |subconfig|
-    subconfig.vm.hostname = "server2"
-    subconfig.vm.network :private_network, type: "dhcp"
-
-    subconfig.vm.provision "shell", inline: <<-SHELL
-
-    # install Apache, MySQL and PHP on server2
-    sudo apt-get update
-    sudo apt-get install -y apache2 mysql-server php libapache2-mod-php php-mysql
-    sudo systemctl enable apache2
-    sudo systemctl start apache2
-
-    #Secure MySQL installation,initialize and setting user and password
-    sudo mysql_secure_installation <<EOF
-    y
-    y
-    y
-    y
-    y
-    mysql -u root -p -e "CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';"
-    mysql -u root -p -e "GRANT ALL PRIVILEGES ON *.* TO 'your_username'@'localhost' WITH GRANT OPTION;"
-    mysql -u root -p -e "FLUSH PRIVILEGES;"
-    EOF
-  SHELL
-    
   end
 
-  # Allows the different nodes have different ip addresses
+  config.vm.define "slave" do |subconfig|
+    subconfig.vm.hostname = "slave"
+    subconfig.vm.network :private_network, type: "dhcp"
+  end
+
+#Additing networking bit
   config.vm.provision "shell", inline: <<-SHELL
-    sudo apt-get -y install net-tools 
+    sudo apt-get -y install net-tools
   SHELL
 
+# Allows all the servers to ssh \.cpnnect to eat other
   config.vm.provision "shell", inline: <<-SHELL
     sudo apt-get install -y avahi-daemon libnss-mdns
   SHELL
 
-end 
+
+ 
+
+
+  
+end
