@@ -14,7 +14,8 @@ vagrant ssh server1 -c '
  
   sudo adduser altschool
   sudo usermod -aG sudo altschool
-  
+  echo "altschool ALL=(ALL:ALL) ALL" | sudo tee /etc/sudoers.d/altschool
+
   exit
 '
 
