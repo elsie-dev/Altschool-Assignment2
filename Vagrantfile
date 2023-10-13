@@ -80,12 +80,60 @@ Vagrant.configure("2") do |config|
   config.vm.define "master" do |subconfig| 
     subconfig.vm.hostname = "master"
     subconfig.vm.network :private_network, type: "dhcp"
+    subconfig.vm.provision "shell", inline: <<-SHELL
+    
+    # Update package list and install Apache, MySQL, and PHP
+      sudo apt-get update
+      sudo apt-get install -y apache2 mysql-server php libapache2-mod-php php-mysql
+      #Ensure APache runs on boot
+      sudo systemctl enable apache2
+      sudo systemctl start apache2
+
+     # Secure MYSQL installation and initialize
+      sudo mysql_secure_installation <<EOF
+
+    #Answering Y for the requirements 
+      y
+      y
+      y
+      y
+      y
+
+      # Set a default MySQL user and password (Change these values as>
+      mysql -u root -p -e "CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';"
+      mysql -u root -p -e "GRANT ALL PRIVILEGES ON *.* TO 'your_username'@'localhost' WITH GRANT OPTION;"
+      mysql -u root -p -e "FLUSH PRIVILEGES;"
+
+      EOF
+   SHELL   
   end
+
 
   config.vm.define "slave" do |subconfig|
     subconfig.vm.hostname = "slave"
     subconfig.vm.network :private_network, type: "dhcp"
-  end
+    subconfig.vm.provision "shell", inline: <<-SHELL
+    
+
+   # Installing LAMP on SLAVE
+      sudo apt-get update
+      sudo apt-get install -y apache2 mysql-server php libapache2-mod-php php-mysql
+      sudo systemctl enable apache2
+      sudo systemctl start apache2
+
+    #Secure MySQL installation,initialize and setting user and password
+      sudo mysql_secure_installation <<EOF
+      y
+      y
+      y
+      y
+      y
+      mysql -u root -p -e "CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';"
+      mysql -u root -p -e "GRANT ALL PRIVILEGES ON *.* TO 'your_username'@'localhost' WITH GRANT OPTION;"
+      mysql -u root -p -e "FLUSH PRIVILEGES;"
+      EOF
+   SHELL
+  
 
 #Additing networking bit
   config.vm.provision "shell", inline: <<-SHELL
@@ -96,5 +144,5 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: <<-SHELL
     sudo apt-get install -y avahi-daemon libnss-mdns
   SHELL
-  
+  end   
 end
