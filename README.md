@@ -47,3 +47,19 @@ sudo systemctl restart ssh
 ```
 
 Then copy the key from master using ```ssh-copy-id -i vagrant@ipaddressofslave```
+
+## SETTING UP THE SAME PROJECT WITH ANSIBLE
+Created a folder **Ansible** for configuation management
+
+1. Created a virtual environment and activated it 
+```
+python -m venv myenv
+source myenv/bin/activate
+```
+
+2. The playbook.yml contains tasks from the assignment setting up master and slave nodes
+
+3. Ansible_hosts file contains the ip addresses
+
+To run the playbook:
+``` ansible-playbook -i playbook.yml```
