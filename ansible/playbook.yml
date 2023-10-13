@@ -1,0 +1,90 @@
+---
+- name: Configure Infrastructure and LAMP Stack
+  hosts: master-node slave-node
+  become: yes
+  become_method: sudo
+  become_user: root
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apache2
+        - mysql-server
+        - php
+        - libapache2-mod-php
+      when: "'master-node' in inventory_hostname"
+
+    - name: Ensure Apache is running and set to start on boot
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+      when: "'master-node' in inventory_hostname"
+
+    - name: Secure MySQL installation
+      mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+        host: localhost
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      when: "'master-node' in inventory_hostname"
+
+    - name: Initialize MySQL with a default user and password
+      mysql_db:
+        name: mydb
+        state: present
+      when: "'master-node' in inventory_hostname"
+
+    - name: Create altschool user
+      user:
+        name: altschool
+        state: present
+        groups: sudo
+      when: "'master-node' in inventory_hostname"
+
+    - name: Grant altschool user root privileges
+      copy:
+        content: "altschool ALL=(ALL) NOPASSWD: ALL"
+        dest: /etc/sudoers.d/altschool
+        owner: root
+        group: root
+        mode: 0440
+      when: "'master-node' in inventory_hostname"
+
+    - name: Generate SSH key for altschool user on Master Node
+      openssh_keypair:
+        path: /home/altschool/.ssh/id_rsa
+        type: rsa
+        size: 2048
+      when: "'master-node' in inventory_hostname"
+
+    - name: Copy SSH public key to Slave Node
+      authorized_key:
+        user: altschool
+        key: "{{ lookup('file', '/home/altschool/.ssh/id_rsa.pub') }}"
+      when: "'slave-node' in inventory_hostname"
+
+    - name: Transfer /mnt/altschool directory from Master Node to Slave Node
+      synchronize:
+        src: /mnt/altschool/
+        dest: /mnt/altschool/slave/
+        mode: pull
+      delegate_to: master-node
+      when: "'slave-node' in inventory_hostname"
+
+    - name: Display overview of Linux processes
+      command: ps aux
+      register: process_output
+      changed_when: false
+      when: "'master-node' in inventory_hostname"
+
+    - name: Show Linux processes
+      debug:
+        var: process_output.stdout_lines
+      when: "'master-node' in inventory_hostname"
+
+  vars:
+    mysql_root_password: 123abc
