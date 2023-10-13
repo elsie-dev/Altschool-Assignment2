@@ -1,0 +1,7 @@
+[hosts_to_add_key]
+192.168.56.18 #masterip
+192.168.56.19 #slave ip
+
+
+[hosts_to_add_key:vars]
+ansible_ssh_common_args="-o StrictHostKeyChecking=no"
