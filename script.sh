@@ -1,4 +1,4 @@
-y#!/bin/bash
+#!/bin/bash
 
 # Determine the current directory
 CURRENT_DIR=$(pwd)
@@ -7,10 +7,10 @@ CURRENT_DIR=$(pwd)
 vagrant up
 
 # Get the IP address of the Slave node
-server2_ip=$(vagrant ssh-config server2 | grep HostName | awk '{print $2}')
+slave_ip=$(vagrant ssh-config slave | grep HostName | awk '{print $2}')
 
 # SSH into master node , create user altschool with sudo priviledges
-vagrant ssh server1 -c '
+vagrant ssh master -c '
  
   sudo adduser altschool
   sudo usermod -aG sudo altschool
@@ -32,10 +32,10 @@ vagrant ssh server1 -c '
 '
 
 # SSH into server1 and copy SSH key to server2
-vagrant ssh server1 -c "ssh-copy-id -i ~/.ssh/id_rsa altschool@$server2_ip"
+vagrant ssh master -c "ssh-copy-id -i ~/.ssh/id_rsa altschool@$slave_ip"
 
 # SSH into Slave node (server2) again and revert SSH configuration
-vagrant ssh server2 -c '
+vagrant ssh slave -c '
   # Revert SSH configuration to disable password authentication
   sudo sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 
@@ -50,11 +50,34 @@ vagrant ssh server2 -c '
 #vagrant ssh server1 -c "ssh altschool@$server2_ip"
 
 # SSH into server1 as altschool user, create the destination directory, and copy the contents
-vagrant ssh server1 -c "ssh altschool@$server2_ip 'mkdir -p /mnt/altschool/slave && scp -r /mnt/altschool/* /mnt/altschool/slave/'"
+vagrant ssh master -c "ssh altschool@$slave_ip 'mkdir -p /mnt/altschool/slave && scp -r /mnt/altschool/* /mnt/altschool/slave/'"
 
 
 # Display an overview of Linux process on Master
-vagrant ssh server1 -c 'ps aux'
+vagrant ssh master -c 'ps aux'
 
 # Create a PHP info file
 echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/test.php
+
+Get IP address ofthe slave node
+server2_ip=$(vagrant ssh-config slave | grep HostName | awk '{print $2}')
+
+# Install LAMP stack on both nodes
+vagrant ssh master -c '
+  sudo apt-get update
+  sudo apt-get install -y apache2 mysql-server php libapache2-mod-php
+  sudo systemctl enable apache2
+  sudo systemctl start apache2
+  sudo mysql_secure_installation
+  echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/test.php
+  exit
+'
+
+vagrant ssh slave -c '
+  sudo apt-get update
+  sudo apt-get install -y apache2 mysql-server php libapache2-mod-php
+  sudo systemctl enable apache2
+  sudo systemctl start apache2
+  sudo mysql_secure_installation
+  exit
+'
